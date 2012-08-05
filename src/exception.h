@@ -23,6 +23,34 @@
 #include <stdlib.h> // for NULL
 #include <setjmp.h> // for jmp_buf
 
+/* Example usage:
+ *
+ * try {
+ *     // block of code that could throws an exception
+ * } catch(ExceptionOne) {
+ *     printf("ExceptionOne!\n");
+ *     // handle the exception (exit, or do what you want)
+ * } catch(ExceptionTwo, ExceptionThree) as(e) {
+ *     printf("%s at %s:%d", e->type_str, e->filename, e->line);
+ * } catch_any as(e) {
+ *     // Any other exceptions that haven't been caught before
+ *     // we decide to rethrow the exception to previous try/catch block
+ *     printf("Unknown exception type: %s\n", e->type_str);
+ *     rethrow;
+ * }
+ */
+
+/* Example usage of throw:
+ *
+ * #define NullPointerException 1    // Can be any integer value except 0
+ * void ma_fonction(void *ptr)
+ * {
+ *     if (ptr == NULL)
+ *         throw(NullPointerException, "ptr is NULL");
+ *     // ...
+ * }
+ */
+
 #define throw(type, message, ...) \
 	exception_throw(type, #type, __FILE__, __func__, __LINE__, message, ##__VA_ARGS__)
 
@@ -61,24 +89,43 @@
 #endif
 
 typedef struct {
+	/* Type of exception, in its integer and string form */
+	/* If you call throw(MyException, "...") and MyException is 1, then
+	 * type == 1 and type_str == "MyException" */
 	int type;
 	char type_str[EXCEPTION_TYPE_STR_LEN];
+
+	/* Message given to 'throw', after being formatted */
 	char message[EXCEPTION_MESSAGE_LEN];
 
+	/* Respectively __FILE__, __LINE__ and __func__ of 'throw' call */
 	char filename[EXCEPTION_FILENAME_LEN];
 	unsigned int line;
 	char function[EXCEPTION_FUNCTION_LEN];
 } exception_t;
 
+/* Functions below should not be used directly. Use macros instead */
+
+/* Push a new empty jmp_buf variable on top of env stack */
 void
 exception_env_push_new(void);
 
+/* Compare the type of thrown exception (if any) to the list of arguments.
+ * Argument list should ends with 0.
+ * Returns a true value if at least one of values in argument list is equal
+ * to exception type. Returns 0 if not. */
 int
 exception_is_catched(
 	int type,
 	...
 );
 
+/* Throws an exception.
+ * type, type_str, filename, function and line correspond exactly to members of
+ * exception_t struct.
+ * fmt is a format string (as passed to printf). Other arguments are parameters
+ * for this format string. The result string is stored in member message of
+ * exception_t. */
 void
 exception_throw(
 	int type,
@@ -90,15 +137,21 @@ exception_throw(
 	...
 );
 
+/* Returns a pointer to last thrown exception */
 exception_t *
 exception_get(void);
 
+/* Re-throws the same exception to previous try/catch block.
+ * If there is no previous try/catch block, prints exception informations
+ * and exit. */
 void
 exception_rethrow(void);
 
+/* Clean what must to be cleaned after try/catch block */
 void
 exception_cleanup(void);
 
+/* Returns a pointer to the last pushed jmp_buf variable */
 jmp_buf *
 exception_env_get(void);
 

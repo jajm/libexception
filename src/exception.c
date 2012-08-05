@@ -24,6 +24,16 @@
 #include <string.h>
 #include "exception.h"
 
+typedef struct exception_env_stack_s {
+	jmp_buf env;
+	struct exception_env_stack_s *prev;
+} exception_env_stack_t;
+
+/* Global variable which is a pointer to the top of environment stack
+ * (a stack is needed for nested try/catch blocks) */
+exception_env_stack_t *_global_exception_env_stack;
+
+/* Global variable that contains information about last thrown exception */
 exception_t _global_exception = {
 	.type = 0,
 	.type_str = {0},
@@ -73,13 +83,6 @@ exception_t * exception_get(void)
 	return &_global_exception;
 }
 
-typedef struct exception_env_stack_s {
-	jmp_buf env;
-	struct exception_env_stack_s *prev;
-} exception_env_stack_t;
-
-exception_env_stack_t *_global_exception_env_stack;
-
 void exception_env_push_new(void)
 {
 	exception_env_stack_t *new;
@@ -103,7 +106,7 @@ jmp_buf * exception_env_get(void)
 void exception_env_pop(void)
 {
 	exception_env_stack_t *cur;
-	
+
 	cur = _global_exception_env_stack;
 	_global_exception_env_stack = cur->prev;
 	free(cur);
@@ -134,6 +137,7 @@ void exception_throw(int type, const char *type_str, const char *filename,
 		longjmp(*env, type);
 	}
 
+	/* Not within a try block, complain and exit */
 	exception_print_uncaught_message_and_exit();
 }
 
@@ -148,6 +152,7 @@ void exception_rethrow(void)
 		longjmp(*env, e->type);
 	}
 
+	/* Not within a try block, complain and exit */
 	exception_print_uncaught_message_and_exit();
 }
 
@@ -156,7 +161,7 @@ int exception_is_catched(int type, ...)
 	va_list va_ptr;
 	exception_t *e;
 	int catched = 0;
-	
+
 	e = exception_get();
 	if (type == e->type) {
 		catched = 1;

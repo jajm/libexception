@@ -1,4 +1,10 @@
+2012-08-05  Julian Maurice  <jajm@jajm.org>
+
+	* src/exception.c : added comments
+
+	* src/exception.h : added comments
+
 2012-08-04  Julian Maurice  <jajm@jajm.org>
 
-    * Initial release
+	* Initial release
 
