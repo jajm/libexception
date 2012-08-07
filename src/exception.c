@@ -35,22 +35,21 @@ exception_env_stack_t *_global_exception_env_stack;
 
 /* Global variable that contains information about last thrown exception */
 exception_t _global_exception = {
-	.type = 0,
-	.type_str = {0},
+	.type = {0},
 	.message = {0},
 	.filename = {0},
 	.function = {0},
 	.line = 0
 };
 
-void exception_set(int type, const char *type_str, const char *filename,
+void exception_set(const char *type, const char *filename,
 	const char *function, unsigned int line, const char *fmt, va_list va_ptr)
 {
-	if (type_str != NULL) {
-		strncpy(_global_exception.type_str, type_str, EXCEPTION_TYPE_STR_LEN - 2);
-		_global_exception.type_str[EXCEPTION_TYPE_STR_LEN - 1] = '\0';
+	if (type != NULL) {
+		strncpy(_global_exception.type, type, EXCEPTION_TYPE_LEN - 2);
+		_global_exception.type[EXCEPTION_TYPE_LEN - 1] = '\0';
 	} else {
-		_global_exception.type_str[0] = '\0';
+		_global_exception.type[0] = '\0';
 	}
 
 	if (filename != NULL) {
@@ -74,7 +73,6 @@ void exception_set(int type, const char *type_str, const char *filename,
 		_global_exception.message[0] = '\0';
 	}
 
-	_global_exception.type = type;
 	_global_exception.line = line;
 }
 
@@ -118,23 +116,23 @@ void exception_print_uncaught_message_and_exit(void)
 
 	e = exception_get();
 	fprintf(stderr, "Uncaught exception [%s] %s at %s:%d (%s)\n",
-		e->type_str, e->message, e->filename, e->line, e->function);
+		e->type, e->message, e->filename, e->line, e->function);
 
 	exit(EXIT_FAILURE);
 }
 
-void exception_throw(int type, const char *type_str, const char *filename,
+void exception_throw(const char *type, const char *filename,
 	const char *function, unsigned int line, const char *fmt, ...)
 {
 	jmp_buf *env;
 	va_list va_ptr;
 
 	va_start (va_ptr, fmt);
-	exception_set(type, type_str, filename, function, line, fmt, va_ptr);
+	exception_set(type, filename, function, line, fmt, va_ptr);
 	va_end(va_ptr);
 
 	if ( (env = exception_env_get()) ) {
-		longjmp(*env, type);
+		longjmp(*env, 1);
 	}
 
 	/* Not within a try block, complain and exit */
@@ -144,35 +142,68 @@ void exception_throw(int type, const char *type_str, const char *filename,
 void exception_rethrow(void)
 {
 	jmp_buf *env;
-	exception_t *e;
 
 	exception_env_pop();
 	if ( (env = exception_env_get()) ) {
-		e = exception_get();
-		longjmp(*env, e->type);
+		longjmp(*env, 1);
 	}
 
 	/* Not within a try block, complain and exit */
 	exception_print_uncaught_message_and_exit();
 }
 
-int exception_is_catched(int type, ...)
+int exception_is_valid_char(char c)
 {
-	va_list va_ptr;
+	/* This includes all alphanumeric characters ([0-9A-Za-z])
+	 * plus the following characters:
+	 * : ; < = > ? @ [ \ ] ^ _ ` */
+	if (c >= 48 && c <= 122)
+		return 1;
+
+	return 0;
+}
+
+int exception_is_separator(char c)
+{
+	/* All non-valid chars are considered separators */
+	return !exception_is_valid_char(c);
+}
+
+int exception_is_catched(const char *types)
+{
 	exception_t *e;
 	int catched = 0;
+	unsigned int i = 0, j = 0;
 
 	e = exception_get();
-	if (type == e->type) {
-		catched = 1;
-	} else {
-		int t;
-		va_start(va_ptr, type);
-		do {
-			t = va_arg(va_ptr, int);
-		} while (t != e->type && t != 0);
-		va_end(va_ptr);
-		catched = (t == e->type) ? 1 : 0;
+	/* No exception was thrown */
+	if (e->type == NULL)
+		return 0;
+
+	/* If types is a zero-length string, return true so that
+	 * catch() without parameters catch all exceptions */
+	if (types[0] == '\0')
+		return 1;
+
+	while (types[i] != '\0') {
+		if (types[i] != e->type[j]) {
+			/* Jump to next type */
+			while (exception_is_valid_char(types[i])) {
+				i++;
+			}
+			while (types[i] != '\0'
+			&& exception_is_separator(types[i])) {
+				i++;
+			}
+			j = 0;
+		} else {
+			i++; j++;
+			if (e->type[j] == '\0'
+			&& exception_is_separator(types[i])) {
+				catched = 1;
+				break;
+			}
+		}
 	}
 
 	return catched;
@@ -181,5 +212,5 @@ int exception_is_catched(int type, ...)
 void exception_cleanup(void)
 {
 	exception_env_pop();
-	exception_set(0, NULL, NULL, NULL, 0, NULL, NULL);
+	exception_set(NULL, NULL, NULL, 0, NULL, NULL);
 }

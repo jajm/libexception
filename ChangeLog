@@ -1,3 +1,25 @@
+2012-08-07  Julian Maurice  <jajm@jajm.org>
+
+	* src/exception.h: Exception system don't use integer 'type' anymore.
+	(exception_t.type): removed
+	(exception_t.type_str): renamed to type
+	(EXCEPTION_TYPE_STR_LEN): renamed to EXCEPTION_TYPE_LEN
+	(exception_is_catched, exception_throw): prototype changed
+
+	* src/exception.c: Exception system don't use integer 'type' anymore.
+	(exception_set): prototype changed
+	(exception_throw): prototype changed, minor changes
+	(exception_rethrow): minor changes
+	(exception_is_valid_char, exception_is_separator): new functions
+	(exception_is_catched): prototype changed, do strings comparison
+	instead of integers comparison
+
+	* t/test1.c: updated
+
+	* README: updated
+
+	* src/exception.h: replace inclusion of stdlib.h by stddef.h.
+
 2012-08-05  Julian Maurice  <jajm@jajm.org>
 
 	* src/exception.c : added comments

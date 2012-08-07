@@ -20,8 +20,8 @@
 #ifndef exception_h_included
 #define exception_h_included
 
-#include <stdlib.h> // for NULL
-#include <setjmp.h> // for jmp_buf
+#include <stddef.h> // for NULL
+#include <setjmp.h> // for jmp_buf and setjmp
 
 /* Example usage:
  *
@@ -31,8 +31,8 @@
  *     printf("ExceptionOne!\n");
  *     // handle the exception (exit, or do what you want)
  * } catch(ExceptionTwo, ExceptionThree) as(e) {
- *     printf("%s at %s:%d", e->type_str, e->filename, e->line);
- * } catch_any as(e) {
+ *     printf("%s at %s:%d", e->type, e->filename, e->line);
+ * } catch() as(e) {
  *     // Any other exceptions that haven't been caught before
  *     // we decide to rethrow the exception to previous try/catch block
  *     printf("Unknown exception type: %s\n", e->type_str);
@@ -42,7 +42,6 @@
 
 /* Example usage of throw:
  *
- * #define NullPointerException 1    // Can be any integer value except 0
  * void ma_fonction(void *ptr)
  * {
  *     if (ptr == NULL)
@@ -52,16 +51,15 @@
  */
 
 #define throw(type, message, ...) \
-	exception_throw(type, #type, __FILE__, __func__, __LINE__, message, ##__VA_ARGS__)
+	exception_throw(#type, __FILE__, __func__, __LINE__, message, ##__VA_ARGS__)
 
 #define try \
 	exception_env_push_new(); \
-	jmp_buf *_exception_env = exception_env_get(); \
 	for(int _exception_bool = 1; _exception_bool; _exception_bool = 0, exception_cleanup()) \
-	if (!setjmp(*_exception_env))
+	if (!setjmp(*exception_env_get()))
 
 #define catch(...) \
-	else if (exception_is_catched(__VA_ARGS__, 0))
+	else if (exception_is_catched(#__VA_ARGS__))
 
 #define as(e) \
 	for(exception_t *e = exception_get(); e; e = NULL)
@@ -72,8 +70,8 @@
 #define rethrow \
 	exception_rethrow()
 
-#ifndef EXCEPTION_TYPE_STR_LEN
-#define EXCEPTION_TYPE_STR_LEN 64
+#ifndef EXCEPTION_TYPE_LEN
+#define EXCEPTION_TYPE_LEN 64
 #endif
 
 #ifndef EXCEPTION_MESSAGE_LEN
@@ -89,11 +87,8 @@
 #endif
 
 typedef struct {
-	/* Type of exception, in its integer and string form */
-	/* If you call throw(MyException, "...") and MyException is 1, then
-	 * type == 1 and type_str == "MyException" */
-	int type;
-	char type_str[EXCEPTION_TYPE_STR_LEN];
+	/* Type of exception */
+	char type[EXCEPTION_TYPE_LEN];
 
 	/* Message given to 'throw', after being formatted */
 	char message[EXCEPTION_MESSAGE_LEN];
@@ -110,26 +105,25 @@ typedef struct {
 void
 exception_env_push_new(void);
 
-/* Compare the type of thrown exception (if any) to the list of arguments.
- * Argument list should ends with 0.
- * Returns a true value if at least one of values in argument list is equal
+/* Compare the type of thrown exception (if any) to a list of types
+ * Types are passed as a single string containing a comma-separated list of
+ * types.
+ * Returns a true value if at least one type in list is equal
  * to exception type. Returns 0 if not. */
 int
 exception_is_catched(
-	int type,
-	...
+	const char *types
 );
 
 /* Throws an exception.
- * type, type_str, filename, function and line correspond exactly to members of
+ * type, filename, function and line correspond exactly to members of
  * exception_t struct.
  * fmt is a format string (as passed to printf). Other arguments are parameters
  * for this format string. The result string is stored in member message of
  * exception_t. */
 void
 exception_throw(
-	int type,
-	const char *type_str,
+	const char *type,
 	const char *filename,
 	const char *function,
 	unsigned int line,
