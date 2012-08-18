@@ -1,3 +1,21 @@
+2012-08-18  Julian Maurice  <jajm@jajm.org>
+
+	* src/exception.h: as() now returns new structure exception_reader_t
+	(exception_t): definition moved to src/exception.c
+	(exception_reader_t): new type
+	(exception_get): prototype changed
+
+	* src/exception.c: as() now returns new structure exception_reader_t
+	(exception_t): definition moved from src/exception.h
+	(_global_exception_reader): new global variable
+	(exception_get): prototype changed
+	(exception_get_type, exception_get_message, exception_get_filename)
+	(exception_get_function, exception_get_line): new functions
+
+	* t/test1.c: updated
+
+	* README: updated
+
 2012-08-07  Julian Maurice  <jajm@jajm.org>
 
 	* src/exception.h: Exception system don't use integer 'type' anymore.

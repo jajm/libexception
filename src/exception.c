@@ -33,6 +33,24 @@ typedef struct exception_env_stack_s {
  * (a stack is needed for nested try/catch blocks) */
 exception_env_stack_t *_global_exception_env_stack;
 
+#define EXCEPTION_TYPE_LEN 64
+#define EXCEPTION_MESSAGE_LEN 256
+#define EXCEPTION_FILENAME_LEN 64
+#define EXCEPTION_FUNCTION_LEN 64
+
+typedef struct {
+	/* Type of exception */
+	char type[EXCEPTION_TYPE_LEN];
+
+	/* Message given to 'throw', after being formatted */
+	char message[EXCEPTION_MESSAGE_LEN];
+
+	/* Respectively __FILE__, __LINE__ and __func__ of 'throw' call */
+	char filename[EXCEPTION_FILENAME_LEN];
+	unsigned int line;
+	char function[EXCEPTION_FUNCTION_LEN];
+} exception_t;
+
 /* Global variable that contains information about last thrown exception */
 exception_t _global_exception = {
 	.type = {0},
@@ -40,6 +58,39 @@ exception_t _global_exception = {
 	.filename = {0},
 	.function = {0},
 	.line = 0
+};
+
+const char * exception_get_type(void)
+{
+	return _global_exception.type;
+}
+
+const char * exception_get_message(void)
+{
+	return _global_exception.message;
+}
+
+const char * exception_get_filename(void)
+{
+	return _global_exception.filename;
+}
+
+const char * exception_get_function(void)
+{
+	return _global_exception.function;
+}
+
+unsigned int exception_get_line(void)
+{
+	return _global_exception.line;
+}
+
+exception_reader_t _global_exception_reader = {
+	.type = &exception_get_type,
+	.message = &exception_get_message,
+	.filename = &exception_get_filename,
+	.function = &exception_get_function,
+	.line = &exception_get_line
 };
 
 void exception_set(const char *type, const char *filename,
@@ -76,9 +127,9 @@ void exception_set(const char *type, const char *filename,
 	_global_exception.line = line;
 }
 
-exception_t * exception_get(void)
+exception_reader_t * exception_get(void)
 {
-	return &_global_exception;
+	return &_global_exception_reader;
 }
 
 void exception_env_push_new(void)
@@ -112,9 +163,8 @@ void exception_env_pop(void)
 
 void exception_print_uncaught_message_and_exit(void)
 {
-	exception_t *e;
+	exception_t *e = &_global_exception;
 
-	e = exception_get();
 	fprintf(stderr, "Uncaught exception [%s] %s at %s:%d (%s)\n",
 		e->type, e->message, e->filename, e->line, e->function);
 
@@ -171,11 +221,10 @@ int exception_is_separator(char c)
 
 int exception_is_catched(const char *types)
 {
-	exception_t *e;
+	exception_t *e = &_global_exception;
 	int catched = 0;
 	unsigned int i = 0, j = 0;
 
-	e = exception_get();
 	/* No exception was thrown */
 	if (e->type == NULL)
 		return 0;

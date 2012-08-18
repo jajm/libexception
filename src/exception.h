@@ -31,7 +31,7 @@
  *     printf("ExceptionOne!\n");
  *     // handle the exception (exit, or do what you want)
  * } catch(ExceptionTwo, ExceptionThree) as(e) {
- *     printf("%s at %s:%d", e->type, e->filename, e->line);
+ *     printf("%s at %s:%d", e->type(), e->filename(), e->line());
  * } catch() as(e) {
  *     // Any other exceptions that haven't been caught before
  *     // we decide to rethrow the exception to previous try/catch block
@@ -62,7 +62,7 @@
 	else if (exception_is_catched(#__VA_ARGS__))
 
 #define as(e) \
-	for(exception_t *e = exception_get(); e; e = NULL)
+	for(exception_reader_t *e = exception_get(); e; e = NULL)
 
 #define catch_any \
 	else
@@ -70,34 +70,14 @@
 #define rethrow \
 	exception_rethrow()
 
-#ifndef EXCEPTION_TYPE_LEN
-#define EXCEPTION_TYPE_LEN 64
-#endif
-
-#ifndef EXCEPTION_MESSAGE_LEN
-#define EXCEPTION_MESSAGE_LEN 256
-#endif
-
-#ifndef EXCEPTION_FILENAME_LEN
-#define EXCEPTION_FILENAME_LEN 64
-#endif
-
-#ifndef EXCEPTION_FUNCTION_LEN
-#define EXCEPTION_FUNCTION_LEN 64
-#endif
 
 typedef struct {
-	/* Type of exception */
-	char type[EXCEPTION_TYPE_LEN];
-
-	/* Message given to 'throw', after being formatted */
-	char message[EXCEPTION_MESSAGE_LEN];
-
-	/* Respectively __FILE__, __LINE__ and __func__ of 'throw' call */
-	char filename[EXCEPTION_FILENAME_LEN];
-	unsigned int line;
-	char function[EXCEPTION_FUNCTION_LEN];
-} exception_t;
+	const char * (*type)(void);
+	const char * (*message)(void);
+	const char * (*filename)(void);
+	const char * (*function)(void);
+	unsigned int (*line)(void);
+} exception_reader_t;
 
 /* Functions below should not be used directly. Use macros instead */
 
@@ -132,7 +112,7 @@ exception_throw(
 );
 
 /* Returns a pointer to last thrown exception */
-exception_t *
+exception_reader_t *
 exception_get(void);
 
 /* Re-throws the same exception to previous try/catch block.

@@ -32,14 +32,16 @@ int main(int argc, char **argv)
 	 * statement.
 	 * Multiple catch statements are allowed */
 	/* as(e) allow to retrieve exception informations into e.
-	 * Can be ommited */
+	 * To know which methods are available, see members of
+	 * exception_reader_t in exception.h.
+	 * Can be ommited. */
 	catch (NullArgException, InvalidExpressionException) as (e) {
 		printf("Exception catched!\n");
-		printf("Exception type: %s\n", e->type);
-		printf("Exception message: %s\n", e->message);
-		printf("Exception file: %s\n", e->filename);
-		printf("Exception function: %s\n", e->function);
-		printf("Exception line: %d\n", e->line);
+		printf("Exception type: %s\n", e->type());
+		printf("Exception message: %s\n", e->message());
+		printf("Exception file: %s\n", e->filename());
+		printf("Exception function: %s\n", e->function());
+		printf("Exception line: %d\n", e->line());
 		/* Prints:
 			Exception type: InvalidExpressionException
 			Exception message: Invalid expression: 'invalid_expr'
