@@ -14,7 +14,7 @@ void parse_expr(char *expr) {
 	/* ... */
 }
 
-int main(int argc, char **argv)
+int main()
 {
 	try {
 		parse_expr("/valid_expr/");  // OK, program continue
