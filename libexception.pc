@@ -1,6 +1,6 @@
 prefix=/usr/local
 libdir=${prefix}/lib
-includedir=${prefix]/include/libexception
+includedir=${prefix}/include/libexception
 
 Name: libexception
 Description: libexception provide a simple way to handle exceptions in C
