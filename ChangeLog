@@ -1,3 +1,11 @@
+2013-03-27  Julian Maurice  <jajm@jajm.org>
+
+	* libexception.pc: Fix definition of includedir variable
+
+2013-01-18  Julian Maurice  <jajm@jajm.org>
+
+	* libexception: Remove autotools files
+
 2012-08-18  Julian Maurice  <jajm@jajm.org>
 
 	* src/exception.h: as() now returns new structure exception_reader_t
