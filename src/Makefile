@@ -12,7 +12,7 @@ HEADERS := $(wildcard *.h)
 all: $(LIBRARY_NAME)
 
 $(LIBRARY_NAME): $(OBJS)
-	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -rpath $(LIBDIR) -version-info $(LIBTOOL_VERSION) -o $@ $^
+	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -rpath $(LIBDIR) -version-info $(LIBTOOL_VERSION) -release $(PACKAGE_RELEASE) -o $@ $^
 
 %.lo: %.c
 	$(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<

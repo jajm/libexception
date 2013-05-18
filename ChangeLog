@@ -1,3 +1,7 @@
+2013-05-18  Julian Maurice  <jajm@jajm.org>
+
+	* libexception: Release libexception 0.1
+
 2013-03-27  Julian Maurice  <jajm@jajm.org>
 
 	* libexception.pc: Fix definition of includedir variable
