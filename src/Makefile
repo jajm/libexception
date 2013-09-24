@@ -18,9 +18,10 @@ $(LIBRARY_NAME): $(OBJS)
 	$(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 install: $(LIBRARY_NAME)
-	$(INSTALL) -d $(INCLUDEDIR)
-	$(INSTALL) --mode=0644 $(HEADERS) $(INCLUDEDIR)
-	$(LIBTOOL) --mode=install $(INSTALL) $< $(LIBDIR)
+	$(INSTALL) -d $(DESTDIR)$(INCLUDEDIR)
+	$(INSTALL) -d $(DESTDIR)$(LIBDIR)
+	$(INSTALL) --mode=0644 $(HEADERS) $(DESTDIR)$(INCLUDEDIR)
+	$(LIBTOOL) --mode=install $(INSTALL) $< $(DESTDIR)$(LIBDIR)
 
 clean:
 	rm -rf *.o *.lo $(LIBRARY_NAME) .libs
