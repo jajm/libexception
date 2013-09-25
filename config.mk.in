@@ -1,0 +1,10 @@
+CC := gcc
+MAKE := make
+LIBTOOL := libtool
+INSTALL := install
+
+prefix := @prefix@
+exec_prefix := @exec_prefix@
+libdir := @libdir@
+includedir := @includedir@/libexception
+pkgconfigdir := $(libdir)/pkgconfig

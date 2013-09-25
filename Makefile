@@ -12,8 +12,8 @@ test:
 
 install:
 	$(MAKE) -C src install
-	$(INSTALL) -d $(DESTDIR)$(PKGCONFIGDIR)
-	$(INSTALL) --mode=0644 libexception.pc $(DESTDIR)$(PKGCONFIGDIR)
+	$(INSTALL) -d $(DESTDIR)$(pkgconfigdir)
+	$(INSTALL) --mode=0644 libexception.pc $(DESTDIR)$(pkgconfigdir)
 
 clean:
 	$(MAKE) -C src clean
