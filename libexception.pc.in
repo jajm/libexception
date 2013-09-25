@@ -5,6 +5,6 @@ includedir=@includedir@
 
 Name: libexception
 Description: libexception provide a simple way to handle exceptions in C
-Version: 0.0.0
+Version: @PACKAGE_VERSION@
 Libs: -L${libdir} -lexception
 Cflags: -I${includedir}
