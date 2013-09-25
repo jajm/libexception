@@ -12,16 +12,16 @@ HEADERS := $(wildcard *.h)
 all: $(LIBRARY_NAME)
 
 $(LIBRARY_NAME): $(OBJS)
-	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -rpath $(LIBDIR) -version-info $(LIBTOOL_VERSION) -release $(PACKAGE_RELEASE) -o $@ $^
+	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -rpath $(libdir) -version-info $(LIBTOOL_VERSION) -o $@ $^
 
 %.lo: %.c
 	$(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 install: $(LIBRARY_NAME)
-	$(INSTALL) -d $(DESTDIR)$(INCLUDEDIR)
-	$(INSTALL) -d $(DESTDIR)$(LIBDIR)
-	$(INSTALL) --mode=0644 $(HEADERS) $(DESTDIR)$(INCLUDEDIR)
-	$(LIBTOOL) --mode=install $(INSTALL) $< $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -d $(DESTDIR)$(includedir)
+	$(INSTALL) -d $(DESTDIR)$(libdir)
+	$(INSTALL) --mode=0644 $(HEADERS) $(DESTDIR)$(includedir)
+	$(LIBTOOL) --mode=install $(INSTALL) $< $(DESTDIR)$(libdir)
 
 clean:
 	rm -rf *.o *.lo $(LIBRARY_NAME) .libs
