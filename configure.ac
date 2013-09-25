@@ -1,4 +1,4 @@
-AC_INIT([libexception], [1.0], [jajm@jajm.org])
+AC_INIT([libexception], [1.1], [jajm@jajm.org])
 
 LIBTOOL_CURRENT=0
 LIBTOOL_REVISION=0
