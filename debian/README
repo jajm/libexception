@@ -1,6 +1,0 @@
-The Debian Package libexception
-----------------------------
-
-libexception is a small library to handle exceptions in C.
-
- -- Julian Maurice <jajm@jajm.org>  Tue, 24 Sep 2013 18:43:33 +0200
